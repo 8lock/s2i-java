@@ -1,0 +1,14 @@
+#!/bin/bash -e
+#
+# S2I run script for the 's2i-java-build' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+echo "---> Starting Java application"
+echo "--> # JAVA_PARAMS = $JAVA_PARAMS "
+echo "--> # APP_OPTIONS = $APP_OPTIONS"
+echo "---> Running application from standalone jar/war..."
+exec java $JAVA_PARAMS -Djava.security.egd=file:/dev/./urandom -jar /opt/app-root/app.jar $APP_OPTIONS

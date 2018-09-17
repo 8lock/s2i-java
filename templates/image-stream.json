@@ -1,0 +1,26 @@
+{
+   "kind": "ImageStream",
+   "apiVersion": "v1",
+   "metadata": {
+      "name": "s2i-java-build"
+   },
+   "spec": {
+      "tags": [
+         {
+            "name": "latest",
+            "annotations": {
+               "description": "Java OpenJDK S2I image",
+               "iconClass": "icon-java",
+               "tags": "builder,java,maven,gradle,springboot",
+               "supports": "java:8,mvnw,gradlew",
+               "sampleRepo": "https://github.com/shaodan/spring-boot-hello-world.git",
+               "version": "latest"
+            },
+            "from": {
+               "kind": "DockerImage",
+               "name": "shaodan/s2i-java-build:latest"
+            }
+         }
+      ]
+   }
+}

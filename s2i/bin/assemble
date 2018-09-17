@@ -1,0 +1,47 @@
+#!/bin/bash -e
+#
+# S2I assemble script for the 's2i-java-build .
+# The 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+set -e
+shopt -s dotglob
+
+#HOME=/opt/app-root/src
+
+# If assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+	exec /usr/libexec/s2i/usage
+fi
+
+# Restore artifacts from the previous build (if they exist).
+if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
+  echo "---> Restoring build artifacts..."
+  mv /tmp/artifacts/. ./
+  #mv /tmp/artifacts/.m2 $HOME
+  #mv /tmp/artifacts/.gradle "$HOME"/
+fi
+
+echo "---> Installing application source..."
+cp -Rf /tmp/src/. ./
+
+echo "---> Building application from source..."
+# TODO: Add build steps for your application, eg npm install, bundle install, pip install, etc.
+if [ -f "mvnw" ]; then
+    ./mvnw ${MVN_GOALS:-clean package} -DskipTests=${MVN_SKIP_TESTS:-true} \
+        -Dmaven.skip.tests=${MVN_SKIP_TESTS:-true} ${MVN_OPTS}
+    APP_TARGET=/opt/app-root/src/target/*.jar
+elif [ -f "gradlew" ]; then
+    ./gradlew ${GRADLE_GOALS:-clean build} -Dorg.gradle.deamon=${GRADLE_DEAMON:-false} -x test
+    APP_TARGET=/opt/app-root/src/build/libs/*.jar
+else
+    echo "FATAL - No mvnw or gradlew found"
+    exit 1
+fi
+
+echo "---> Copying built application to app-root..."
+# TODO this may fail if there are more than one jar generated
+cp -a $APP_TARGET /opt/app-root/app.jar
