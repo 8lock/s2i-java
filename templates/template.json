@@ -76,7 +76,7 @@
                   },
                   "from": {
                      "kind": "DockerImage",
-                     "name": "shaodan/s2i-java-build:latest"
+                     "name": "blockfin/s2i-java:latest"
                   }
                }
             ]
