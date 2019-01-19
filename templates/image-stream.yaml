@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: s2i-java
+  labels:
+    app: s2i-java
+spec:
+  tags:
+  - name: latest
+    from:
+      kind: DockerImage
+      name: blockfin/s2i-java

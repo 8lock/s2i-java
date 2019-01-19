@@ -1,0 +1,89 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: recorder-builder
+  annotations:
+    openshift.io/display-name: Recorder Builder
+    description: Recorder Builder Template
+    tags: java,recorder
+    iconClass: icon-java
+    template.openshift.io/long-description: This template defines resources needed
+      to develop a SpringBoot application, including a build configuration, application
+      deployment configuration, and database deployment configuration.
+    template.openshift.io/provider-display-name: BlockFin, Inc.
+    template.openshift.io/documentation-url: https://github.com
+    template.openshift.io/support-url: https://www.blockfin.global
+message: |-
+  The following service(s) have been created in your project: ${NAME}.
+
+  For more information about using this template, including OpenShift considerations, see https://github.com/openshift/cake-ex/blob/master/README.md.
+labels:
+  template: recorder
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+    annotations:
+      description: Keeps track of changes in the application image
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+    annotations:
+      description: Defines how to build the application
+  spec:
+    source:
+      type: Git
+      git:
+        uri: "${SOURCE_REPOSITORY_URL}"
+        ref: "${SOURCE_REPOSITORY_REF}"
+      contextDir: "${CONTEXT_DIR}"
+      sourceSecret:
+        name: "${GITLAB_SOURCE_SECRET}"
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: s2i-java:latest
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${NAME}:latest"
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - type: GitLab
+      gitlab:
+        secret: "${GITLAB_WEBHOOK_SECRET}"
+parameters:
+- name: NAME
+  displayName: Name
+  description: The name of build ImageStream
+  required: true
+  value: recorder
+- name: SOURCE_REPOSITORY_URL
+  displayName: Git Repository URL
+  description: The URL of the repository with your application source code.
+  required: true
+  value: git@gitlab.blockfin.us:infrastructure/tokenwin_recorder.git
+- name: SOURCE_REPOSITORY_REF
+  displayName: Git Reference
+  description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch.
+- name: CONTEXT_DIR
+  displayName: Context Directory
+  description: Set this to the relative path to your project if it is not in the root
+    of your repository.
+- name: GITLAB_SOURCE_SECRET
+  displayName: GitLab Source Secret
+  description: GitLab source secret.
+  value: gitlab-recorder-source-secret
+- name: GITLAB_WEBHOOK_SECRET
+  displayName: GitLab Webhook Secret
+  description: GitLab trigger secret.  A difficult to guess string encoded as part
+    of the webhook URL.  Not encrypted.
+  generate: expression
+  from: "[a-zA-Z0-9]{40}"
